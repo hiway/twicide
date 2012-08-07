@@ -46,18 +46,39 @@ def purge_friends(api):
         return None
 
     user = api.me()
-    friends = user.friends()
     print "Mass unfollowing: ",
 
-    for f in friends:
+    for f in tweepy.Cursor(api.friends).items():
         print f.screen_name,
         f.unfollow()
         print "+",
 
     print "... done."
 
+def purge_followers(api):
+    """Blocks and unblocks all followers - making them unfollow you."""
+    print "="*80
+    print "WARNING: CONTINUING WILL REMOVE ALL YOUR FOLLOWERS."
+    print "="*80
+    response = raw_input("Type 'remove all followers' to continue: ")
+    if not response == 'remove all followers':
+        print "Cancelling..."
+        return None
+
+    user = api.me()
+    print "Mass follower purge: ",
+
+    for f in tweepy.Cursor(api.followers).items():
+        print f.screen_name, ": ",
+        print "blocking...",
+        api.create_block(f.id)
+        print "unblocking...",
+        api.destroy_block(f.id)
+        print "done."
+
 
 if __name__ == '__main__':
     api = twhelper.get_api()
     show_stats(api)
     purge_friends(api)
+    purge_followers(api)
